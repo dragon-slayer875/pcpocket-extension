@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+
+  <body>
+    <div class="container">
+      <h2>Send to PcPocket</h2>
+
+      <form id="bookmark-form">
+        <div class="form-group">
+          <label for="title">Title:</label>
+          <input type="text" id="title" placeholder="Enter bookmark title" />
+        </div>
+
+        <div class="form-group">
+          <label for="url">URL:</label>
+          <input type="url" id="url" />
+        </div>
+
+        <div class="form-group">
+          <label for="tags">Tags:</label>
+          <input
+            type="text"
+            id="tags"
+            placeholder="Enter tags separated by commas"
+          />
+        </div>
+
+        <div class="favicon-container">
+          <img id="favicon" src="" alt="Favicon" />
+          <span id="favicon-url"></span>
+        </div>
+
+        <div class="button-group">
+          <button type="submit" id="save-button">Save Bookmark</button>
+        </div>
+      </form>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

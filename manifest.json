@@ -1,0 +1,39 @@
+{
+  "manifest_version": 2,
+  "name": "PcPocket",
+  "version": "1.0.0-beta",
+  "description": "Companion extension to directly send bookmarks to the PcPocket app",
+  "homepage_url": "https://github.com/mdn/webextensions-examples/tree/main/beastify",
+  "icons": {
+    "48": "icons/beasts-48.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "pcPocket@dragonSlayer875",
+      "strict_min_version": "50.0"
+    }
+  },
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "permissions": ["activeTab", "bookmarks", "storage", "tabs"],
+  "browser_action": {
+    "default_icon": "icons/beasts-32.png",
+    "default_title": "PcPocket",
+    "default_popup": "popup/popup.html"
+  },
+  "actions": {
+    "default_icon": "icons/beasts-32.png",
+    "default_title": "PcPocket",
+    "default_popup": "popup/popup.html"
+  },
+  "commands": {
+    "_execute_browser_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y"
+      },
+      "description": "Open the PcPocket extension"
+    }
+  }
+}
