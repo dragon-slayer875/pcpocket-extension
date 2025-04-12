@@ -1,10 +1,10 @@
-name: Build Firefox Extension
+name: Build and Release Extension
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    # Run on semver tags (e.g., 1.0.0, 2.3.1-beta, etc.)
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+*"
   workflow_dispatch: # Allows manual triggering
 
 jobs:
@@ -14,23 +14,78 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for all tags and branches
+
+      # Extract version from tag name
+      - name: Get version
+        id: get_version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            # Extract version from tag (without 'v' prefix)
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            # Extract version from manifest.json as fallback
+            VERSION=$(grep '"version"' manifest.json | cut -d '"' -f 4)
+            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      # Extract major, minor, patch versions and check for prerelease
+      - name: Parse semver
+        id: semver
+        run: |
+          VERSION=${{ steps.get_version.outputs.VERSION }}
+          # Extract semver components
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3 | cut -d- -f1)
+          # Handle pre-release suffix if present
+          if [[ $VERSION == *-* ]]; then
+            PRERELEASE=1
+            SUFFIX=$(echo $VERSION | cut -d- -f2-)
+            echo "PRERELEASE=true" >> $GITHUB_OUTPUT
+            echo "SUFFIX=$SUFFIX" >> $GITHUB_OUTPUT
+          else
+            echo "PRERELEASE=false" >> $GITHUB_OUTPUT
+          fi
+          echo "MAJOR=$MAJOR" >> $GITHUB_OUTPUT
+          echo "MINOR=$MINOR" >> $GITHUB_OUTPUT
+          echo "PATCH=$PATCH" >> $GITHUB_OUTPUT
+
+      # Generate changelog from commits
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Find the previous tag that matches semver pattern
+          PREV_TAG=$(git tag --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+' | grep -v ${{ steps.get_version.outputs.VERSION }} | head -n 1)
+
+          # Create changelog file
+          touch CHANGELOG.md
+
+          if [ -z "$PREV_TAG" ]; then
+            # If no previous tag, use all commits
+            echo "## Initial Release" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git log --pretty=format:"* %s (%h)" >> CHANGELOG.md
+            echo "No previous tags found, using all commits for changelog" 
+          else
+            echo "## Changes since $PREV_TAG" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git log --pretty=format:"* %s (%h)" $PREV_TAG..${{ github.ref_name }} >> CHANGELOG.md
+            echo "Previous tag: $PREV_TAG"
+          fi
+
+          # Show the changelog for debugging
+          cat CHANGELOG.md
 
       - name: Package extension
         run: |
           # Create a zip file with all extension files
-          # Exclude git related files and any other unnecessary files
-          zip -r pcpocket-extension.zip . -x "*.git*" "*.github*" "README.md" "LICENSE" ".gitignore"
-
-      - name: Upload extension artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: pcpocket-extension
-          path: pcpocket-extension.zip
+          zip -r pcpocket-extension-${{ steps.get_version.outputs.VERSION }}.zip . -x "*.git*" "*.github*" "README.md" "LICENSE" ".gitignore"
 
       # Optional: Validate the extension structure using web-ext
-      # This step checks if your extension is properly formatted
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "22"
 
@@ -40,6 +95,28 @@ jobs:
       - name: Lint extension
         run: web-ext lint
         continue-on-error: true
+
+      # Create a GitHub Release
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: ${{ steps.semver.outputs.PRERELEASE }}
+          files: pcpocket-extension-${{ steps.get_version.outputs.VERSION }}.zip
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Optional: Sign the extension using web-ext
+      # Uncomment the following steps if you want to sign the extension
+      # - name: Sign extension
+      #   run: |
+      #     web-ext sign --api-key=${{ secrets.AMO_JWT_ISSUER }} --api-secret=${{ secrets.AMO_JWT_SECRET }}
+      #   env:
+      #     AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+      #     AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
 
       # Optional: Sign the extension using web-ext
       # Uncomment the following steps if you want to sign the extension
