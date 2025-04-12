@@ -1,0 +1,51 @@
+name: Build Firefox Extension
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Package extension
+        run: |
+          # Create a zip file with all extension files
+          # Exclude git related files and any other unnecessary files
+          zip -r pcpocket-extension.zip . -x "*.git*" "*.github*" "README.md" "LICENSE" ".gitignore"
+
+      - name: Upload extension artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: pcpocket-extension
+          path: pcpocket-extension.zip
+
+      # Optional: Validate the extension structure using web-ext
+      # This step checks if your extension is properly formatted
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22"
+
+      - name: Install web-ext
+        run: npm install -g web-ext
+
+      - name: Lint extension
+        run: web-ext lint
+        continue-on-error: true
+
+      # Optional: Sign the extension using web-ext
+      # Uncomment the following steps if you want to sign the extension
+      # - name: Sign extension
+      #   run: |
+      #     web-ext sign --api-key=${{ secrets.AMO_JWT_ISSUER }} --api-secret=${{ secrets.AMO_JWT_SECRET }}
+      #   env:
+      #     AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+      #     AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
