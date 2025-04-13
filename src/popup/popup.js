@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function() {
   const faviconImg = document.getElementById("favicon");
   const faviconUrlSpan = document.getElementById("favicon-url");
 
-  browser.runtime
+  chrome.runtime
     .sendMessage({ action: "getCurrentPageInfo" })
     .then((response) => {
       if (response.error) {
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function() {
       .join(",");
 
     // Add bookmark with tags
-    browser.runtime
+    chrome.runtime
       .sendMessage({
         action: "addBookmark",
         link: url,

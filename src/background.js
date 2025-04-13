@@ -1,17 +1,3 @@
-let bookmarkTags = {};
-
-browser.storage.local.get("bookmarkTags").then((result) => {
-  if (result.bookmarkTags) {
-    bookmarkTags = result.bookmarkTags;
-  }
-});
-
-document.addEventListener("keyup", (event) => {
-  if (event.ctrlKey && event.altKey && event.key === "b") {
-    console.log("Ctrl + Alt + B pressed");
-  }
-});
-
 function addBookmarkWithTags(link, title = "", tags = "", icon_link = "") {
   return new Promise((resolve, reject) => {
     const bookmarkData = {
@@ -38,11 +24,11 @@ function addBookmarkWithTags(link, title = "", tags = "", icon_link = "") {
 
     const deeplink = `pcpocket://bookmark?${params.toString()}`;
 
-    browser.tabs
+    chrome.tabs
       .query({ active: true, currentWindow: true })
       .then((tabs) => {
         if (tabs.length > 0) {
-          browser.tabs
+          chrome.tabs
             .update(tabs[0].id, { url: deeplink })
             .then(() => {
               resolve({
@@ -62,7 +48,7 @@ function addBookmarkWithTags(link, title = "", tags = "", icon_link = "") {
   });
 }
 
-browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.action === "addBookmark") {
     addBookmarkWithTags(
       message.link,
@@ -76,7 +62,7 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 
   if (message.action === "getCurrentPageInfo") {
-    browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
+    chrome.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
       if (tabs.length > 0) {
         sendResponse({
           url: tabs[0].url,

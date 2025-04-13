@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "PcPocket",
   "version": "0.5.0",
   "version_name": "0.5.0 beta",
@@ -14,28 +14,24 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "pcPocket@dragonSlayer875",
-      "strict_min_version": "79.0"
+      "strict_min_version": "109.0"
     }
   },
   "background": {
-    "scripts": ["background.js"],
-    "persistent": false
+    "service_worker": "background.js",
+    "scripts": ["background.js"]
   },
-  "permissions": ["activeTab", "bookmarks", "storage", "tabs"],
-  "browser_action": {
-    "default_icon": "icons/icon128.png",
-    "default_title": "PcPocket",
-    "default_popup": "popup/popup.html"
-  },
-  "actions": {
+  "permissions": ["activeTab", "storage", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
     "default_icon": "icons/icon128.png",
     "default_title": "PcPocket",
     "default_popup": "popup/popup.html"
   },
   "commands": {
-    "_execute_browser_action": {
+    "_execute_action": {
       "suggested_key": {
-        "default": "Ctrl+Alt+B"
+        "default": "Ctrl+Shift+Y"
       },
       "description": "Open the PcPocket extension"
     }
