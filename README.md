@@ -28,7 +28,7 @@ pcpocket://bookmark?link={tabUrl}&title={tabTitle}&tags={tabTags}&icon_link={tab
 
 ## Installation
 
-1. Download the extension from the [Chrome Web Store / Firefox Add-ons / etc.].
+1. Download the extension from the [releases](https://github.com/dragon-slayer875/pcpocket-extension/releases) page.
 2. Pin the extension for easy access (optional).
 
 ## Requirements
