@@ -35,7 +35,7 @@
   "commands": {
     "_execute_browser_action": {
       "suggested_key": {
-        "default": "Ctrl+Shift+Y"
+        "default": "Ctrl+Alt+B"
       },
       "description": "Open the PcPocket extension"
     }
