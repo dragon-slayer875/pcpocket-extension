@@ -2,6 +2,9 @@
 
 Companion extension for the PcPocket app that allows bookmarks to be to the PcPocket database by sending tab information to the app using deeplinks.
 
+![PcPocket extension screenshot](https://github.com/user-attachments/assets/dbf33a58-0de0-451c-87e3-d869682b9f30)
+
+
 ## Features
 
 - **Add bookmarks to PcPocket**  
