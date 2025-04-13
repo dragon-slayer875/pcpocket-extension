@@ -2,9 +2,8 @@ name: Build and Release Extension
 
 on:
   push:
-    # Run on semver tags (e.g., 1.0.0, 2.3.1-beta, etc.)
     tags:
-      - "[0-9]+.[0-9]+.[0-9]+*"
+      - "(0|[1-9][0-9]{0,8})([.](0|[1-9][0-9]{0,8})){0,3}"
   workflow_dispatch: # Allows manual triggering
 
 permissions:
@@ -25,58 +24,43 @@ jobs:
         id: get_version
         run: |
           if [[ $GITHUB_REF == refs/tags/* ]]; then
-            # Extract version from tag (without 'v' prefix)
+            # Extract version from tag
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           else
             # Extract version from manifest.json as fallback
-            VERSION=$(grep '"version"' manifest.json | cut -d '"' -f 4)
+            VERSION=$(grep '"version"' src/manifest.json | cut -d '"' -f 4)
             echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           fi
-
-      # Extract major, minor, patch versions and check for prerelease
-      - name: Parse semver
-        id: semver
-        run: |
-          VERSION=${{ steps.get_version.outputs.VERSION }}
-          # Extract semver components
-          MAJOR=$(echo $VERSION | cut -d. -f1)
-          MINOR=$(echo $VERSION | cut -d. -f2)
-          PATCH=$(echo $VERSION | cut -d. -f3 | cut -d- -f1)
-          # Handle pre-release suffix if present
-          if [[ $VERSION == *-* ]]; then
-            PRERELEASE=1
-            SUFFIX=$(echo $VERSION | cut -d- -f2-)
-            echo "PRERELEASE=true" >> $GITHUB_OUTPUT
-            echo "SUFFIX=$SUFFIX" >> $GITHUB_OUTPUT
-          else
-            echo "PRERELEASE=false" >> $GITHUB_OUTPUT
-          fi
-          echo "MAJOR=$MAJOR" >> $GITHUB_OUTPUT
-          echo "MINOR=$MINOR" >> $GITHUB_OUTPUT
-          echo "PATCH=$PATCH" >> $GITHUB_OUTPUT
 
       # Generate changelog from commits
       - name: Generate changelog
         id: changelog
         run: |
-          # Find the previous tag that matches semver pattern
-          PREV_TAG=$(git tag --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+' | grep -v ${{ steps.get_version.outputs.VERSION }} | head -n 1)
+          # Find the previous tag that matches our pattern
+          # This uses a simplified grep pattern to match the custom format
+          PREV_TAG=$(git tag --sort=-v:refname | grep -E '^[0-9]+(\.[0-9]+)*$' | grep -v ${{ steps.get_version.outputs.VERSION }} | head -n 1)
 
           # Create changelog file
           touch CHANGELOG.md
+          echo "# Firefox Extension Release ${{ steps.get_version.outputs.VERSION }}" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
 
           if [ -z "$PREV_TAG" ]; then
             # If no previous tag, use all commits
-            echo "## Initial Release" > CHANGELOG.md
+            echo "## Initial Release" >> CHANGELOG.md
             echo "" >> CHANGELOG.md
             git log --pretty=format:"* %s (%h)" >> CHANGELOG.md
             echo "No previous tags found, using all commits for changelog" 
           else
-            echo "## Changes since $PREV_TAG" > CHANGELOG.md
+            echo "## Changes since $PREV_TAG" >> CHANGELOG.md
             echo "" >> CHANGELOG.md
             git log --pretty=format:"* %s (%h)" $PREV_TAG..${{ github.ref_name }} >> CHANGELOG.md
             echo "Previous tag: $PREV_TAG"
           fi
+
+          # Add download link
+          echo "" >> CHANGELOG.md
+          echo "[Download the extension](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/pcpocket-extension-${{ steps.get_version.outputs.VERSION }}.zip)" >> CHANGELOG.md
 
           # Show the changelog for debugging
           cat CHANGELOG.md
@@ -84,7 +68,7 @@ jobs:
       - name: Package extension
         run: |
           # Create a zip file with all extension files
-          zip -r pcpocket-extension-${{ steps.get_version.outputs.VERSION }}.zip . -x "*.git*" "*.github*" "README.md" "LICENSE" ".gitignore"
+          zip -r pcpocket-extension-${{ steps.get_version.outputs.VERSION }}.zip src/*
 
       # Optional: Validate the extension structure using web-ext
       - name: Setup Node.js
@@ -106,7 +90,7 @@ jobs:
         with:
           name: Release ${{ steps.get_version.outputs.VERSION }}
           draft: false
-          prerelease: ${{ steps.semver.outputs.PRERELEASE }}
+          prerelease: false
           files: pcpocket-extension-${{ steps.get_version.outputs.VERSION }}.zip
           body_path: CHANGELOG.md
         env:
