@@ -9,7 +9,7 @@ Companion extension for the PcPocket app that allows bookmarks to be to the PcPo
 
 - **Keyboard Shortcut**  
   Open or close the extension using a customizable keyboard shortcut.
-  - **Default Shortcut**: `Ctrl + Shift + Y` (Configurable in addon settings)
+  - **Default Shortcut**: `Ctrl + Alt + B` (Configurable in addon settings)
 
 ## How It Works
 
@@ -20,9 +20,11 @@ Companion extension for the PcPocket app that allows bookmarks to be to the PcPo
 ## Deeplink Format
 
 The extension uses a custom PcPocket deeplink to send data:
+
 ```
 pcpocket://bookmark?link={tabUrl}&title={tabTitle}&tags={tabTags}&icon_link={tabFavicon}
 ```
+
 > [!IMPORTANT]
 > The PcPocket app must be installed and configured to handle this custom URL scheme.
 
