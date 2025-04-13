@@ -68,7 +68,7 @@ jobs:
       - name: Package extension
         run: |
           # Create a zip file with all extension files
-          zip -r pcpocket-extension-${{ steps.get_version.outputs.VERSION }}.zip src/*
+          cd src && zip -r ../pcpocket-extension-${{ steps.get_version.outputs.VERSION }}.zip .
 
       # Optional: Validate the extension structure using web-ext
       - name: Setup Node.js
