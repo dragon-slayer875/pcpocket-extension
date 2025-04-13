@@ -4,7 +4,6 @@ Companion extension for the PcPocket app that allows bookmarks to be added to th
 
 ![PcPocket extension screenshot](https://github.com/user-attachments/assets/dbf33a58-0de0-451c-87e3-d869682b9f30)
 
-
 ## Features
 
 - **Add bookmarks to PcPocket**  
@@ -12,7 +11,7 @@ Companion extension for the PcPocket app that allows bookmarks to be added to th
 
 - **Keyboard Shortcut**  
   Open or close the extension using a customizable keyboard shortcut.
-  - **Default Shortcut**: `Ctrl + Alt + B` (Configurable in addon settings)
+  - **Default Shortcut**: `Ctrl + Shift + Y` (Configurable in addon settings)
 
 ## How It Works
 
