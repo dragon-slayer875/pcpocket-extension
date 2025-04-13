@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "PcPocket",
-  "version": "1.0",
+  "version": "0.5.0",
   "version_name": "1.0 beta",
   "description": "Companion extension to directly send bookmarks to the PcPocket app",
   "homepage_url": "https://github.com/mdn/webextensions-examples/tree/main/beastify",
